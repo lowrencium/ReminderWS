@@ -6,7 +6,7 @@ Le projet Steria consiste dans le développement d’une application au Service 
 
 La partie services web de ce projet doit permettre le traitement de l'ensemble des données afin d'assurer la portabilité de l'application sur différents supports.
 
-L'application de gestion des services web sera réalisée en [![PHP]] et utilisera le framework [![CakePHP]. Elle gèrera une base de donnée utilisant le moteur [![SQLite]. Pendant la phase de développement le tout sera hébergé sur un serveur web [![Lighttpd].
+L'application de gestion des services web sera réalisée en [PHP] et utilisera le framework [![CakePHP]. Elle gèrera une base de donnée utilisant le moteur [![SQLite]. Pendant la phase de développement le tout sera hébergé sur un serveur web [![Lighttpd].
 
 Liens utiles
 ----------------
