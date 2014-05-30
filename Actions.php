@@ -1,0 +1,2 @@
+<?php
+    AccountAction::RegisterAction($server);
