@@ -1,0 +1,41 @@
+# Config file
+Application/Config.php
+ 
+# Editors
+*.kate-swp
+*~
+.*.swp
+.project
+cscope.files
+cscope.out
+ 
+## NetBeans
+nbproject*
+project.index
+sublime-*
+ 
+# Operating systems
+ 
+## Mac OS X
+.DS_Store
+ 
+## Windows
+Thumbs.db
+
+#LaTeX
+*.aux
+*.log
+*.synctex.gz
+*.toc
+*.out
+ 
+# Misc
+.buildpath
+.classpath
+.idea
+.metadata*
+.settings
+static*
+
+# Gitkeep
+!.gitkeep
