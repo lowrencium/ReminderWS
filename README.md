@@ -30,5 +30,11 @@ To run the project here is a Virtual Host for apache :
 </Virtualhost>
 ```
 
+To deploy :
+```sh
+cp dandelion.yml.dist dandelion.yml
+vim dandelion.yml
+dandelion deploy
+```
 
 
