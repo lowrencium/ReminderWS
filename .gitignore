@@ -1,6 +1,9 @@
 # Config file
 Application/Config.php
- 
+
+# Deploy tool
+dandelion.yml
+
 # Editors
 *.kate-swp
 *~
