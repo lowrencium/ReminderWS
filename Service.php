@@ -5,7 +5,7 @@
     $server = new nusoap_server();
     $server->configureWSDL($_CONF["SERVER_NAME"]);
 
-    if(getenv("env") == "prod")
+    if(getenv("APPLICATION_ENV") == "prod")
     {
         //Target en prod
         $server->wsdl->schemaTargetNamespace = 'http://'.$_CONF["SERVER_NAME"].'.'.$_CONF["URL"].'/Server.php';

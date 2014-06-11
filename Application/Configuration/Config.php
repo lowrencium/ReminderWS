@@ -1,5 +1,5 @@
 <?php
-    if(getenv("env") == "prod")
+    if(getenv("APPLICATION_ENV") == "prod")
     {
         $_CONF["URL"] = "aminemanzou.com";
         $_CONF["SERVER_NAME"] = "remindme-webservice";
