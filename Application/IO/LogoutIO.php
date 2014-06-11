@@ -1,5 +1,5 @@
 <?php
-class LoginIO extends DefaultIO
+class LogoutIO
 {
     /**
      * @var bool
@@ -7,9 +7,9 @@ class LoginIO extends DefaultIO
     private $_resultat = false;
 
     /**
-     * @var User
+     * @var string
      */
-    private $_user;
+    private $_erreur = null;
 
     /**
      * @param bool $resultat
@@ -36,36 +36,14 @@ class LoginIO extends DefaultIO
     }
 
     /**
-     * @param User $user
-     */
-    public function setUser($user)
-    {
-        if($user instanceof User)
-        {
-            $this->_user = $user;
-        }
-        else
-        {
-            throw new Exception("User requis");
-        }
-    }
-
-    /**
      * @return array
      */
     public function toArray()
     {
         $result = array(
             "Resultat" => $this->_resultat,
-            "Token" => "",
-            "Utilisateur" => $this->_user instanceof User ? $this->_user->toArray() : null,
             "Erreur" => $this->_erreur
         );
-
-        if($this->_resultat)
-        {
-            $result["Token"] = session_id();
-        }
 
         return $result;
     }
@@ -75,8 +53,6 @@ class LoginIO extends DefaultIO
      */
     public static function addType($serveur)
     {
-        User::addType($serveur);
-
         $serveur->wsdl->addComplexType(
             "LoginIO",
             "complexType",
@@ -85,8 +61,6 @@ class LoginIO extends DefaultIO
             "",
             array(
                 "Resultat" => array("name" => "Resultat", "type" => "xsd:boolean"),
-                "Token" => array("name" => "Token", "type" => "xsd:string"),
-                "Utilisateur" => array("name" => "Utilisateur", "type" => "tns:User"),
                 "Erreur" => array("name" => "Erreur", "type" => "xsd:string")
             )
         );
