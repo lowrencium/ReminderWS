@@ -1,15 +1,10 @@
 <?php
-class LogoutIO
+class LogoutIO extends DefaultIO
 {
     /**
      * @var bool
      */
     private $_resultat = false;
-
-    /**
-     * @var string
-     */
-    private $_erreur = null;
 
     /**
      * @param bool $resultat
@@ -54,10 +49,10 @@ class LogoutIO
     public static function addType($serveur)
     {
         $serveur->wsdl->addComplexType(
-            "LoginIO",
+            "LogoutIO",
             "complexType",
             "struct",
-            "sequence",
+            "all",
             "",
             array(
                 "Resultat" => array("name" => "Resultat", "type" => "xsd:boolean"),

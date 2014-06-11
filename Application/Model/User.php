@@ -98,7 +98,7 @@ class User
             "User",
             "complexType",
             "struct",
-            "sequence",
+            "all",
             "",
             array(
                 "Id" => array("name" => "Id", "type" => "xsd:string"),

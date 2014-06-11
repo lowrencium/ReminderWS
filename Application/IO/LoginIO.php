@@ -81,13 +81,13 @@ class LoginIO extends DefaultIO
             "LoginIO",
             "complexType",
             "struct",
-            "sequence",
+            "all",
             "",
             array(
                 "Resultat" => array("name" => "Resultat", "type" => "xsd:boolean"),
                 "Token" => array("name" => "Token", "type" => "xsd:string"),
-                "Utilisateur" => array("name" => "Utilisateur", "type" => "tns:User"),
-                "Erreur" => array("name" => "Erreur", "type" => "xsd:string")
+                "Erreur" => array("name" => "Erreur", "type" => "xsd:string"),
+                "Utilisateur" => array("name" => "Utilisateur", "type" => "tns:User")
             )
         );
     }
