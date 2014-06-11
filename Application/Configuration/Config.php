@@ -1,7 +1,7 @@
 <?php
     if(getenv("APPLICATION_ENV") == "prod")
     {
-        $_CONF["URL"] = "aminemanzou.com";
+        $_CONF["URL"] = "amineamanzou.com";
         $_CONF["SERVER_NAME"] = "remindme-webservice";
         $_CONF["SOAP_CACHE"] = "1";
     }
