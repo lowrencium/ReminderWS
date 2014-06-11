@@ -21,7 +21,7 @@ class AccountAction implements IAction
 /**
  * @param string $login
  * @param string $password
- * @return bool
+ * @return array
  */
 function Login($login, $password)
 {
@@ -91,6 +91,10 @@ function Login($login, $password)
     return $sortie->toArray();
 }
 
+/**
+ * @param $token
+ * @return LogoutIO
+ */
 function Logout($token)
 {
     Helper::tokenManager($token);
@@ -98,5 +102,5 @@ function Logout($token)
 
     $sortie->setResultat(session_destroy());
 
-    return $sortie;
+    return $sortie->toArray();
 }
