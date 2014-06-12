@@ -57,4 +57,11 @@ class AccountData
             throw new Exception("Erreur lors de l'execution de la requête");
         }
     }
+
+    public function addUser($pseudo, $password, $salt, $prenom, $nom, $email, $type)
+    {
+        $sql = "INSERT INTO user ";
+        $sql .= "(username, ) ";
+        $sql .= "VALUE ()";
+    }
 }

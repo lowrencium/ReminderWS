@@ -7,6 +7,7 @@ class AccountAction implements IAction
         {
             $server->addFunction("Login");
             $server->addFunction("Logout");
+            $server->addFunction("SignIn");
         }
         elseif($server instanceof nusoap_server)
         {
@@ -14,6 +15,8 @@ class AccountAction implements IAction
             $server->register("Login", array("login" => "xsd:string", "password" => "xsd:string"), array("return" => "tns:LoginIO"));
             LogoutIO::addType($server);
             $server->register("Logout", array("token" => "xsd:string"), array("return" => "tns:LogoutIO"));
+            SignInIO::addType($server);
+            $server->register("SignIn", array("username" => "xsd:string", "prenom" => "xsd:string", "nom" => "xsd:string", "email" => "xsd:string", "type" => "xsd:int", "password" => "xsd:string"), array("return" => "tns:SignInIO"));
         }
     }
 }
@@ -52,13 +55,7 @@ function Login($login, $password)
         $salt = $row->salt;
         $salted = $password.'{'.$salt.'}';
 
-        $digest = hash("sha512", $salted, true);
-
-        for ($i = 1; $i < 5000; $i++) {
-            $digest = hash("sha512", $digest.$salted, true);
-        }
-
-        $digest = base64_encode($digest);
+        $digest = Helper::encodePassword($salted);
 
         if($digest == $row->password)
         {
@@ -102,5 +99,36 @@ function Logout($token)
 
     $sortie->setResultat(session_destroy());
 
+    return $sortie->toArray();
+}
+
+function SignIn($username, $prenom, $nom, $email, $type, $password)
+{
+    $sortie = new SignInIO();
+    try
+    {
+        $dataAdapter = new AccountData();
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    $salt = md5(uniqid(null, true));
+    $salted = $password.'{'.$salt.'}';
+    $digest = Helper::encodePassword($salted);
+
+    try
+    {
+        $dataAdapter->addUser($username, $digest, $salt, $prenom, $nom, $email, $type);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    $sortie->setResultat(true);
     return $sortie->toArray();
 }
