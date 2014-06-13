@@ -50,7 +50,7 @@ class AccountData
 
         try
         {
-            return $this->_db->query($sql);;
+            return $this->_db->query($sql);
         }
         catch(Exception $e)
         {
@@ -58,10 +58,8 @@ class AccountData
         }
     }
 
-    public function addUser($pseudo, $password, $salt, $prenom, $nom, $email, $type)
+    public function checkToken($id, $token)
     {
-        $sql = "INSERT INTO user ";
-        $sql .= "(username, ) ";
-        $sql .= "VALUE ()";
+
     }
 }

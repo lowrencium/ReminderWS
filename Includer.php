@@ -17,10 +17,17 @@
         require_once($filename);
     }
 
-    foreach (glob("Application/IO/*IO.php") as $filename)
+    if(file_exists("Application/IO/DefaultIO.php"))
     {
-        require_once($filename);
+        require_once("Application/IO/DefaultIO.php");
+
+        foreach (glob("Application/IO/*IO.php") as $filename)
+        {
+            require_once($filename);
+        }
     }
+    else
+        throw new Exception("Erreur interne au serveur");
 
     foreach (glob("Application/Model/*.php") as $filename)
     {

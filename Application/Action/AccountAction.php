@@ -121,7 +121,7 @@ function SignIn($username, $prenom, $nom, $email, $type, $password)
 
     try
     {
-        $dataAdapter->addUser($username, $digest, $salt, $prenom, $nom, $email, $type);
+        //$dataAdapter->addUser($username, $digest, $salt, $prenom, $nom, $email, $type);
     }
     catch(Exception $e)
     {
