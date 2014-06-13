@@ -104,13 +104,13 @@ function RecupererRappel($id, $token)
             $rappel->setTitre($row->description);
             $rappel->setLieu($row->lieu);
             $begin = new DateTime();
-            $begin->createFromFormat("Y-m-d", $row->begin);
+            $begin->createFromFormat("Y-m-d h:i:s", $row->begin);
             $rappel->setBegin($begin->getTimestamp());
             $end = new DateTime();
-            $end->createFromFormat("Y-m-d", $row->end);
+            $end->createFromFormat("Y-m-d h:i:s", $row->end);
             $rappel->setEnd($end->getTimestamp());
             $lastUpdate = new DateTime();
-            $lastUpdate->createFromFormat("Y-m-d", $row->lastUpdate);
+            $lastUpdate->createFromFormat("Y-m-d h:i:s", $row->lastUpdate);
             $rappel->setLastUpdate($lastUpdate->getTimestamp());
             $sortie->addRappel($rappel);
         }

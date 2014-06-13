@@ -27,7 +27,7 @@ class RappelData
     public function creerRappel($id, $titre, $lieu, $debut, $fin)
     {
         $sql = "INSERT INTO `rappel`(`id`, `description`, `cycle`, `lieu`, `begin`, `end`, `type`, `lastUpdate`) ";
-        $sql .= 'VALUES ("","'.$titre.'","","'.$lieu.'","'.date("Y-m-d", $debut).'","'.date("Y-m-d", $fin).'","","'.date("Y-m-d").'");';
+        $sql .= 'VALUES ("","'.$titre.'","","'.$lieu.'","'.date("Y-m-d h:i:s", $debut).'","'.date("Y-m-d h:i:s", $fin).'","","'.date("Y-m-d h:i:s").'");';
 
         try {
             $this->_db->query($sql);
@@ -38,7 +38,7 @@ class RappelData
         }
 
         $sql = "INSERT INTO `user_rappel`(`user_id`, `rappel_id`, `beginShare`, `endShare`) ";
-        $sql .= "VALUES ('".$id."','".$this->_db->lastInsertId()."', '".date("Y-m-d")."', '')";
+        $sql .= "VALUES ('".$id."','".$this->_db->lastInsertId()."', '".date("Y-m-d h:i:s")."', '')";
 
         try {
             $this->_db->query($sql);
