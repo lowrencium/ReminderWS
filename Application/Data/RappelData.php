@@ -17,17 +17,44 @@ class RappelData
     }
 
     /**
+     * @param string $id
      * @param string $titre
      * @param string $lieu
      * @param int $debut
      * @param int $fin
-     * @return PDOStatement
      * @throws Exception
      */
-    public function creerRappel($titre, $lieu, $debut, $fin)
+    public function creerRappel($id, $titre, $lieu, $debut, $fin)
     {
         $sql = "INSERT INTO `rappel`(`id`, `description`, `cycle`, `lieu`, `begin`, `end`, `type`, `lastUpdate`) ";
         $sql .= 'VALUES ("","'.mysql_real_escape_string($titre).'","","'.mysql_real_escape_string($lieu).'","'.date("Y-m-d", $debut).'","'.date("Y-m-d", $fin).'","","'.date("Y-m-d").'");';
+
+        try {
+            $this->_db->query($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+
+        $sql = "INSERT INTO `user_rappel`(`user_id`, `rappel_id`, `beginShare`, `endShare`) ";
+        $sql .= "VALUES ('".$id."','".$this->_db->lastInsertId()."', '".date("Y-m-d")."', '')";
+
+        try {
+            $this->_db->query($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+    }
+
+    public function recupererRappel($id)
+    {
+        $sql = "SELECT * ";
+        $sql .= "FROM rappel, user_rappel ";
+        $sql .= "WHERE rappel.id = user_rappel.rappel_id ";
+        $sql .= "AND user_rappel.user_id = ".$id;
 
         try {
             return $this->_db->query($sql);

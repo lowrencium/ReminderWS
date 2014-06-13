@@ -6,11 +6,14 @@ class RappelAction implements IAction
         if($server instanceof SoapServer)
         {
             $server->addFunction("CreerRappel");
+            $server->addFunction("RecupererRappel");
         }
         elseif($server instanceof nusoap_server)
         {
             CreerRappelIO::addType($server);
             $server->register("CreerRappel", array("id" => "xsd:string", "token" => "xsd:string", "titre" => "xsd:string", "lieu" => "xsd:string", "debut" => "xsd:int", "fin" => "xsd:int"), array("return" => "tns:CreerRappelIO"));
+            RecupererRappelIO::addType($server);
+            $server->register("RecupererRappel", array("id" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:RecupererRappelIO"));
         }
     }
 }
@@ -44,15 +47,78 @@ function CreerRappel($id, $token, $titre, $lieu, $debut, $fin)
     $titre = htmlspecialchars(htmlentities($titre));
     $lieu = htmlspecialchars(htmlentities($lieu));
 
+    if($fin < $debut)
+        $fin = $debut;
+
     try
     {
         $dataAdapter = new RappelData();
-        $dataAdapter->creerRappel($titre, $lieu, substr($debut, 0, 9), substr($fin, 0, 9));
+        $dataAdapter->creerRappel($id, $titre, $lieu, substr($debut, 0, 9), substr($fin, 0, 9));
     }
     catch(Exception $e)
     {
         $sortie->setErreur($e);
         return $sortie->toArray();
+    }
+
+    $sortie->setResultat(true);
+    return $sortie->toArray();
+}
+
+/**
+ * @param string $id
+ * @param string $token
+ * @return array
+ */
+function RecupererRappel($id, $token)
+{
+    $sortie = new RecupererRappelIO();
+
+    try
+    {
+        $dataAdapter = new AccountData();
+        $data = $dataAdapter->checkToken($id, $token);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    try
+    {
+        $dataAdapter = new RappelData();
+        $data = $dataAdapter->recupererRappel($id);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    while($row = $data->fetch(PDO::FETCH_OBJ))
+    {
+        try
+        {
+            $rappel = new Rappel($row->id);
+            $rappel->setTitre($row->description);
+            $rappel->setLieu($row->lieu);
+            $begin = new DateTime();
+            $begin->createFromFormat("Y-m-d", $row->begin);
+            $rappel->setBegin($begin->getTimestamp());
+            $end = new DateTime();
+            $end->createFromFormat("Y-m-d", $row->end);
+            $rappel->setEnd($end->getTimestamp());
+            $lastUpdate = new DateTime();
+            $lastUpdate->createFromFormat("Y-m-d", $row->lastUpdate);
+            $rappel->setLastUpdate($lastUpdate->getTimestamp());
+            $sortie->addRappel($rappel);
+        }
+        catch(Exception $e)
+        {
+            $sortie->setErreur($e);
+            return $sortie->toArray();
+        }
     }
 
     $sortie->setResultat(true);
