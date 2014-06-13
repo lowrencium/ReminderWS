@@ -27,7 +27,7 @@ class RappelData
     public function creerRappel($id, $titre, $lieu, $debut, $fin)
     {
         $sql = "INSERT INTO `rappel`(`id`, `description`, `cycle`, `lieu`, `begin`, `end`, `type`, `lastUpdate`) ";
-        $sql .= 'VALUES ("","'.mysql_real_escape_string($titre).'","","'.mysql_real_escape_string($lieu).'","'.date("Y-m-d", $debut).'","'.date("Y-m-d", $fin).'","","'.date("Y-m-d").'");';
+        $sql .= 'VALUES ("","'.$titre.'","","'.$lieu.'","'.date("Y-m-d", $debut).'","'.date("Y-m-d", $fin).'","","'.date("Y-m-d").'");';
 
         try {
             $this->_db->query($sql);
