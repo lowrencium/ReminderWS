@@ -71,7 +71,7 @@ class Rappel
     {
         if(is_numeric($begin))
         {
-            $this->_begin = substr($begin, 0, 9);
+            $this->_begin = substr($begin, 0, 10);
         }
         else
         {
@@ -87,7 +87,7 @@ class Rappel
     {
         if(is_numeric($end))
         {
-            $this->_end = substr($end, 0, 9);
+            $this->_end = substr($end, 0, 10);
         }
         else
         {
@@ -103,7 +103,7 @@ class Rappel
     {
         if(is_numeric($lastUpdate))
         {
-            $this->_lastUpdate = substr($lastUpdate, 0, 9);
+            $this->_lastUpdate = substr($lastUpdate, 0, 10);
         }
         else
         {

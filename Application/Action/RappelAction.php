@@ -56,7 +56,7 @@ function CreerRappel($id, $token, $titre, $lieu, $debut, $fin)
     try
     {
         $dataAdapter = new RappelData();
-        $dataAdapter->creerRappel($id, $titre, $lieu, substr($debut, 0, 9), substr($fin, 0, 9));
+        $dataAdapter->creerRappel($id, $titre, $lieu, substr($debut, 0, 10), substr($fin, 0, 10));
     }
     catch(Exception $e)
     {
