@@ -64,4 +64,53 @@ class RappelData
             throw new Exception("Erreur lors de l'execution de la requête");
         }
     }
+
+    /**
+     * @param string $id
+     * @param string $rappelId
+     * @return boolean
+     * @throws Exception
+     */
+    public function supprimerRappel($id, $rappelId)
+    {
+        $sql = "SELECT COUNT(id) as nbRappel FROM rappel, user_rappel WHERE rappel.id = user_rappel.rappel_id AND user_id = ".$id." AND rappel_id = ".$rappelId;
+
+        try {
+            $result = $this->_db->query($sql);
+            $result = $result->fetch(PDO::FETCH_OBJ);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+
+        if($result->nbRappel == 1)
+        {
+            $sql = "DELETE FROM user_rappel WHERE rappel_id = ".$rappelId;
+
+            try
+            {
+                $this->_db->exec($sql);
+            }
+            catch(Exception $e)
+            {
+                throw new Exception("Erreur lors de l'execution de la requête");
+            }
+
+            $sql = "DELETE FROM rappel WHERE id = ".$rappelId;
+
+            try
+            {
+                return $this->_db->exec($sql);
+            }
+            catch(Exception $e)
+            {
+                throw new Exception("Erreur lors de l'execution de la requête");
+            }
+        }
+        else
+        {
+            throw new Exception("Ce rappel n'appartient pas à cet utilisateur");
+        }
+    }
 }

@@ -7,6 +7,7 @@ class RappelAction implements IAction
         {
             $server->addFunction("CreerRappel");
             $server->addFunction("RecupererRappel");
+            $server->addFunction("SupprimerRappel");
         }
         elseif($server instanceof nusoap_server)
         {
@@ -14,6 +15,8 @@ class RappelAction implements IAction
             $server->register("CreerRappel", array("id" => "xsd:string", "token" => "xsd:string", "titre" => "xsd:string", "lieu" => "xsd:string", "debut" => "xsd:int", "fin" => "xsd:int"), array("return" => "tns:CreerRappelIO"));
             RecupererRappelIO::addType($server);
             $server->register("RecupererRappel", array("id" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:RecupererRappelIO"));
+            SupprimerRappelIO::addType($server);
+            $server->register("SupprimerRappel", array("id" => "xsd:string", "rappelId" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:SupprimerRappelIO"));
         }
     }
 }
@@ -122,5 +125,45 @@ function RecupererRappel($id, $token)
     }
 
     $sortie->setResultat(true);
+    return $sortie->toArray();
+}
+
+/**
+ * @param string $id
+ * @param string $rappelId
+ * @param string $token
+ * @return array
+ */
+function SupprimerRappel($id, $rappelId, $token)
+{
+    $sortie = new SupprimerRappelIO();
+
+    try
+    {
+        $dataAdapter = new AccountData();
+        $data = $dataAdapter->checkToken($id, $token);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    try
+    {
+        $dataAdapter = new RappelData();
+        $data = $dataAdapter->supprimerRappel($id, $rappelId);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    if($data)
+        $sortie->setResultat(true);
+    else
+        $sortie->setErreur(new Exception("Echec de la requête"));
+
     return $sortie->toArray();
 }
