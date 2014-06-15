@@ -2,6 +2,11 @@
 class Contact
 {
     /**
+     * @var string Identifiant du contact
+     */
+    private $_id;
+
+    /**
      * @var string Email du contact
      */
     private $_email;
@@ -22,22 +27,35 @@ class Contact
     private $_adresse;
 
     /**
-     * @param string $email
+     * @var string type de contact
      */
-    public function __construct($email)
+    private $_type;
+
+    /**
+     * @param string $id
+     */
+    public function __construct($id)
     {
-        if(!empty($email) && !is_null($email))
-            $this->_email = $email;
+        if(!empty($id) && !is_null($id))
+            $this->_id = $id;
         else
-            throw new Exception("L'email est obligatoire");
+            throw new Exception("L'id est obligatoire");
     }
 
     /**
-     * @param string$nom
+     * @param string $nom
      */
     public function setNom($nom)
     {
         $this->_nom = $nom;
+    }
+
+    /**
+     * @param string $email
+     */
+    public function setEmail($email)
+    {
+        $this->_email = $email;
     }
 
     /**
@@ -57,15 +75,25 @@ class Contact
     }
 
     /**
+     * @param string $type
+     */
+    public function setType($type)
+    {
+        $this->_type = $type;
+    }
+
+    /**
      * @var array
      */
     public function toArray()
     {
         return array(
+            "Id" => $this->_id,
             "Email" => $this->_email,
             "Nom" => $this->_nom,
             "Telephone" => $this->_telephone,
-            "Adresse" => $this->_adresse
+            "Adresse" => $this->_adresse,
+            "Type" => $this->_type
         );
     }
 
@@ -81,10 +109,12 @@ class Contact
             "all",
             "",
             array(
+                "Id" => array("name" => "Id", "type" => "xsd:string"),
                 "Email" => array("name" => "Email", "type" => "xsd:string"),
                 "Nom" => array("name" => "Nom", "type" => "xsd:string"),
                 "Telephone" => array("name" => "Telephone", "type" => "xsd:string"),
-                "Adresse" => array("name" => "Adresse", "type" => "xsd:string")
+                "Adresse" => array("name" => "Adresse", "type" => "xsd:string"),
+                "Type" => array("name" => "Type", "type" => "xsd:string")
             )
         );
     }

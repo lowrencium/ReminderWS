@@ -113,4 +113,56 @@ class RappelData
             throw new Exception("Ce rappel n'appartient pas à cet utilisateur");
         }
     }
+
+    /**
+     * @param string $id
+     * @param string $rappelId
+     * @param string $contactId
+     * @param string $type
+     * @return boolean
+     * @throws Exception
+     */
+    public function partagerRappel($id, $rappelId, $contactId, $type)
+    {
+        $sql = "SELECT COUNT(rappel_id) as nbRappel FROM user_rappel WHERE rappel_id = ".$rappelId." AND user_id = ".$id;
+
+        try
+        {
+            $data = $this->_db->query($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+
+        $row = $data->fetch(PDO::FETCH_OBJ);
+        if($row->nbRappel == 1)
+        {
+            if($type == "User")
+            {
+                $sql = "INSERT INTO `user_rappel`(`user_id`, `rappel_id`, `beginShare`, `endShare`) VALUES (".$contactId.", ".$rappelId.", ".date("Y-m-d h:i:s").", '')";
+            }
+            elseif($type == "Guest")
+            {
+                $sql = "INSERT INTO `guest_rappel`(`guest_id`, `rappel_id`, `beginShare`, `endShare`) VALUES (".$contactId.", ".$rappelId.", ".date("Y-m-d h:i:s").", '')";
+            }
+            else
+            {
+                throw new Exception("Type de contact inconnu");
+            }
+
+            try
+            {
+                return $this->_db->exec($sql);
+            }
+            catch(Exception $e)
+            {
+                throw new Exception("Erreur lors de l'execution de la requête");
+            }
+        }
+        else
+        {
+            throw new Exception("Ce rappel n'appartient pas à cet utilisateur");
+        }
+    }
 }

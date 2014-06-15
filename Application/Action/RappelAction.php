@@ -8,6 +8,7 @@ class RappelAction implements IAction
             $server->addFunction("CreerRappel");
             $server->addFunction("RecupererRappel");
             $server->addFunction("SupprimerRappel");
+            $server->addFunction("PartagerRappel");
         }
         elseif($server instanceof nusoap_server)
         {
@@ -17,6 +18,8 @@ class RappelAction implements IAction
             $server->register("RecupererRappel", array("id" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:RecupererRappelIO"));
             SupprimerRappelIO::addType($server);
             $server->register("SupprimerRappel", array("id" => "xsd:string", "rappelId" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:SupprimerRappelIO"));
+            PartagerRappelIO::addType($server);
+            $server->register("PartagerRappel", array("id" => "xsd:string", "token" => "xsd:string", "rappelId" => "xsd:string", "contactId" => "xsd:string", "type" => "xsd:string"), array("return" => "tns:PartagerRappelIO"));
         }
     }
 }
@@ -46,9 +49,6 @@ function CreerRappel($id, $token, $titre, $lieu, $debut, $fin)
     }
 
     //Test si token ok
-
-    $titre = htmlspecialchars(htmlentities($titre));
-    $lieu = htmlspecialchars(htmlentities($lieu));
 
     if($fin < $debut)
         $fin = $debut;
@@ -161,6 +161,48 @@ function SupprimerRappel($id, $rappelId, $token)
         $sortie->setResultat(true);
     else
         $sortie->setErreur(new Exception("Echec de la requête"));
+
+    return $sortie->toArray();
+}
+
+/**
+ * @param string $id
+ * @param string $token
+ * @param string $rappelId
+ * @param string $contactId
+ * @param string $type
+ * @return array
+ */
+function PartagerRappel($id, $token, $rappelId, $contactId, $type)
+{
+    $sortie = new PartagerRappelIO();
+
+    try
+    {
+        $dataAdapter = new AccountData();
+        $data = $dataAdapter->checkToken($id, $token);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    try
+    {
+        $dataAdapter = new RappelData();
+        $data = $dataAdapter->partagerRappel($id, $rappelId, $contactId, $type);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    if($data)
+        $sortie->setResultat(true);
+    else
+        $sortie->setErreur(new Exception("Erreur lors de l'execution de la requête"));
 
     return $sortie->toArray();
 }

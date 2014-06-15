@@ -8,6 +8,7 @@ class ContactAction implements IAction
             $server->addFunction("AjouterContact");
             $server->addFunction("RecupererContacts");
             $server->addFunction("SupprimerContact");
+            $server->addFunction("ValiderContact");
         }
         elseif($server instanceof nusoap_server)
         {
@@ -16,7 +17,9 @@ class ContactAction implements IAction
             RecupererContactsIO::addType($server);
             $server->register("RecupererContacts", array("id" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:RecupererContactsIO"));
             SupprimerContactIO::addType($server);
-            $server->register("SupprimerContact", array("id" => "xsd:string", "token" => "xsd:string", "email" => "xsd:string"), array("return" => "tns:SupprimerContactIO"));
+            $server->register("SupprimerContact", array("id" => "xsd:string", "token" => "xsd:string", "contactId" => "xsd:string", "type" => "xsd:string"), array("return" => "tns:SupprimerContactIO"));
+            ValiderContactIO::addType($server);
+            $server->register("ValiderContact", array("id" => "xsd:string", "token" => "xsd:string", "contactId" => "xsd:string"), array("return" => "tns:ValiderContactIO"));
         }
     }
 }
@@ -47,7 +50,7 @@ function AjouterContact($id, $token, $nom, $email, $telephone, $adresse)
     try
     {
         $dataAdapter = new ContactData();
-        $data = $dataAdapter->RecupererContacts($id);
+        $data = $dataAdapter->checkContact($email);
     }
     catch(Exception $e)
     {
@@ -56,45 +59,29 @@ function AjouterContact($id, $token, $nom, $email, $telephone, $adresse)
     }
 
     $row = $data->fetch(PDO::FETCH_OBJ);
-    if(empty($row->contacts))
+    if($row->nbUser == 1)
     {
-        $result = array();
-    }
-    else
-    {
-        $result = json_decode($row->contacts, true);
-    }
-
-    if(is_array($result))
-    {
-        if(!array_key_exists($email, $result))
+        try
         {
-            $result[$email] = array(
-                "Nom" => $nom,
-                "Telephone" => $telephone,
-                "Adresse" => $adresse
-            );
+            $data = $dataAdapter->addUserContact($id, $email);
         }
-        else
+        catch(Exception $e)
         {
-            $sortie->setErreur(new Exception("Ce contact existe déjà"));
+            $sortie->setErreur($e);
             return $sortie->toArray();
         }
     }
     else
     {
-        $sortie->setErreur(new Exception("Format de données incorrect"));
-        return $sortie->toArray();
-    }
-
-    try
-    {
-        $data = $dataAdapter->SetContacts($id, json_encode($result));
-    }
-    catch(Exception $e)
-    {
-        $sortie->setErreur($e);
-        return $sortie->toArray();
+        try
+        {
+            $data = $dataAdapter->addGuestContact($id, $nom, $email, $telephone, $adresse);
+        }
+        catch(Exception $e)
+        {
+            $sortie->setErreur($e);
+            return $sortie->toArray();
+        }
     }
 
     if($data)
@@ -127,7 +114,7 @@ function RecupererContacts($id, $token)
     try
     {
         $dataAdapter = new ContactData();
-        $data = $dataAdapter->RecupererContacts($id);
+        $data = $dataAdapter->recupererUserContacts($id);
     }
     catch(Exception $e)
     {
@@ -135,22 +122,36 @@ function RecupererContacts($id, $token)
         return $sortie->toArray();
     }
 
-    $row = $data->fetch(PDO::FETCH_OBJ);
-    if(empty($row->contacts))
+    while($row = $data->fetch(PDO::FETCH_OBJ))
     {
-        $result = array();
-    }
-    else
-    {
-        $result = json_decode($row->contacts, true);
+        $contact = new Contact($row->id);
+        $contact->setNom($row->firstname." ".$row->lastname);
+        $contact->setEmail($row->email);
+        $contact->setAdresse("");
+        $contact->setTelephone($row->phone);
+        $contact->setType("User");
+        $sortie->addContact($contact);
     }
 
-    foreach($result as $key=>$value)
+    try
     {
-        $contact = new Contact($key);
-        $contact->setNom($value["Nom"]);
-        $contact->setTelephone($value["Telephone"]);
-        $contact->setAdresse($value["Adresse"]);
+        $dataAdapter = new ContactData();
+        $data = $dataAdapter->recupererGuestContacts($id);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    while($row = $data->fetch(PDO::FETCH_OBJ))
+    {
+        $contact = new Contact($row->id);
+        $contact->setNom($row->name);
+        $contact->setEmail($row->email);
+        $contact->setAdresse($row->adress);
+        $contact->setTelephone($row->phone);
+        $contact->setType("Guest");
         $sortie->addContact($contact);
     }
 
@@ -161,10 +162,11 @@ function RecupererContacts($id, $token)
 /**
  * @param string $id
  * @param string $token
- * @param string $email
+ * @param string $contactId
+ * @param string $type
  * @return array
  */
-function SupprimerContact($id, $token, $email)
+function SupprimerContact($id, $token, $contactId, $type)
 {
     $sortie = new SupprimerContactIO();
 
@@ -181,7 +183,7 @@ function SupprimerContact($id, $token, $email)
     try
     {
         $dataAdapter = new ContactData();
-        $data = $dataAdapter->RecupererContacts($id);
+        $data = $dataAdapter->supprimerContact($id, $contactId, $type);
     }
     catch(Exception $e)
     {
@@ -189,38 +191,49 @@ function SupprimerContact($id, $token, $email)
         return $sortie->toArray();
     }
 
-    $row = $data->fetch(PDO::FETCH_OBJ);
-    if(empty($row->contacts))
-    {
-        $result = array();
-    }
+    if($data)
+        $sortie->setResultat(true);
     else
+        $sortie->setErreur(new Exception("Erreur lors de l'execution de la requête"));
+
+    return $sortie->toArray();
+}
+
+/**
+ * @param string $id
+ * @param string $token
+ * @param string $contactId
+ * @return array
+ */
+function ValiderContact($id, $token, $contactId)
+{
+    $sortie = new ValiderContactIO();
+
+    try
     {
-        $result = json_decode($row->contacts, true);
+        $dataAdapter = new AccountData();
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
     }
 
-    if(array_key_exists($email, $result))
+    try
     {
-        unset($result[$email]);
-        try
-        {
-            $data = $dataAdapter->SetContacts($id, json_encode($result));
-        }
-        catch(Exception $e)
-        {
-            $sortie->setErreur($e);
-            return $sortie->toArray();
-        }
+        $dataAdapter = new ContactData();
+        $data = $dataAdapter->validerContact($id, $contactId);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
 
-        if($data)
-            $sortie->setResultat(true);
-        else
-            $sortie->setErreur(new Exception("Echec de la requête"));
-    }
+    if($data)
+        $sortie->setResultat(true);
     else
-    {
-        $sortie->setErreur(new Exception("Contact inconnu"));
-    }
+        $sortie->setErreur(new Exception("Erreur lors de l'execution de la requête"));
 
     return $sortie->toArray();
 }

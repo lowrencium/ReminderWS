@@ -21,11 +21,12 @@ class ContactData
      * @return PDOStatement
      * @throws Exception
      */
-    public function RecupererContacts($id)
+    public function recupererUserContacts($id)
     {
-        $sql = "SELECT contacts ";
-        $sql .= "FROM user ";
-        $sql .= "WHERE id = ".$id;
+        $sql = "SELECT user.* ";
+        $sql .= "FROM user, user_user ";
+        $sql .= "WHERE ((user.id = user_user.user1_id AND user_user.user2_id = 1) OR (user.id = user_user.user2_id AND user_user.user1_id = 1)) ";
+        $sql .= "AND user_user.validated = 1 ";
 
         try
         {
@@ -39,13 +40,177 @@ class ContactData
 
     /**
      * @param string $id
-     * @param string $contact
+     * @return PDOStatement
+     * @throws Exception
+     */
+    public function recupererGuestContacts($id)
+    {
+        $sql = "SELECT guest.* ";
+        $sql .= "FROM guest, user_guest ";
+        $sql .= "WHERE guest.id = user_guest.guest_id ";
+        $sql .= "AND user_guest.user_id = ".$id;
+
+        try
+        {
+            return $this->_db->query($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+    }
+
+    /**
+     * @param string $email
+     * @return PDOStatement
+     * @throws Exception
+     */
+    public function checkContact($email)
+    {
+        $sql = "SELECT COUNT(id) as nbUser ";
+        $sql .= "FROM user ";
+        $sql .= "WHERE email = '".$email."'";
+
+        try
+        {
+            return $this->_db->query($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+    }
+
+    /**
+     * @param string $id
+     * @param string $email
      * @return boolean
      * @throws Exception
      */
-    public function SetContacts($id, $contact)
+    public function addUserContact($id, $email)
     {
-        $sql = "UPDATE `user` SET `contacts`='".$contact."' WHERE id =".$id;
+        $sql = "SELECT id ";
+        $sql .= "FROM user ";
+        $sql .= "WHERE email = '".$email."'";
+
+        try
+        {
+            $data = $this->_db->query($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+
+        $row = $data->fetch(PDO::FETCH_OBJ);
+        if(!is_array($row) && $row->id != $id)
+        {
+            $sql = "INSERT INTO `user_user`(`user1_id`, `user2_id`, `validated`) VALUES ('".$id."', '".$row->id."', 0)";
+
+            try
+            {
+                return $this->_db->exec($sql);
+            }
+            catch(Exception $e)
+            {
+                throw new Exception("Erreur lors de l'execution de la requête");
+            }
+        }
+        else
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+    }
+
+    /**
+     * @param string $id
+     * @param string $nom
+     * @param string $email
+     * @param string $telephone
+     * @param string $adresse
+     * @return boolean
+     * @throws Exception
+     */
+    public function addGuestContact($id, $nom, $email, $telephone, $adresse)
+    {
+        $sql = "INSERT INTO `guest`(`id`, `name`, `email`, `phone`, `adress`) VALUES ('', '".$nom."', '".$email."', '".$telephone."', '".$adresse."')";
+
+        try
+        {
+            $result = $this->_db->exec($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+
+        if($result)
+        {
+            $sql = "INSERT INTO `user_guest`(`user_id`, `guest_id`) VALUES ('".$id."', '".$this->_db->lastInsertId()."')";
+
+            try
+            {
+                return $result = $this->_db->exec($sql);
+            }
+            catch(Exception $e)
+            {
+                throw new Exception("Erreur lors de l'execution de la requête");
+            }
+        }
+    }
+
+    /**
+     * @param string $id
+     * @param string $contactId
+     * @param string $type
+     * @return boolean
+     * @throws Exception
+     */
+    public function supprimerContact($id, $contactId, $type)
+    {
+        if($type == "User")
+        {
+            $sql = "DELETE FROM user_user WHERE (user1_id = ".$id." AND user2_id = ".$contactId.") OR (user2_id = ".$id." AND user1_id = ".$contactId.")";
+        }
+        elseif($type == "Guest")
+        {
+            $sql = "DELETE FROM user_guest WHERE user_id = ".$id." AND guest_id = ".$contactId;
+
+            try
+            {
+                $this->_db->exec($sql);
+            }
+            catch(Exception $e)
+            {
+                throw new Exception("Erreur lors de l'execution de la requête");
+            }
+
+            $sql = "DELETE FROM guest WHERE id = ".$contactId;
+        }
+        else
+        {
+            throw new Exception("Type de contact inconnu");
+        }
+
+        try
+        {
+            return $this->_db->exec($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+    }
+
+    /**
+     * @param string $id
+     * @param string $contactId
+     * @return boolean
+     * @throws Exception
+     */
+    public function validerContact($id, $contactId)
+    {
+        $sql = "UPDATE `user_user` SET `validated`= 1 WHERE user1_id = ".$contactId." AND user2_id = ".$id;
 
         try
         {
