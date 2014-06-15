@@ -159,11 +159,11 @@ class RappelData
         {
             if($type == "User")
             {
-                $sql = "INSERT INTO `user_rappel`(`user_id`, `rappel_id`, `beginShare`, `endShare`) VALUES (".$contactId.", ".$rappelId.", ".date("Y-m-d h:i:s").", '')";
+                $sql = "INSERT INTO `user_rappel`(`user_id`, `rappel_id`, `beginShare`, `endShare`) VALUES (".$contactId.", ".$rappelId.", '".date("Y-m-d h:i:s")."', '')";
             }
             elseif($type == "Guest")
             {
-                $sql = "INSERT INTO `guest_rappel`(`guest_id`, `rappel_id`, `beginShare`, `endShare`) VALUES (".$contactId.", ".$rappelId.", ".date("Y-m-d h:i:s").", '')";
+                $sql = "INSERT INTO `guest_rappel`(`guest_id`, `rappel_id`, `beginShare`, `endShare`) VALUES (".$contactId.", ".$rappelId.", '".date("Y-m-d h:i:s")."', '')";
             }
             else
             {
