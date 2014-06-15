@@ -97,15 +97,34 @@ class RappelData
                 throw new Exception("Erreur lors de l'execution de la requête");
             }
 
-            $sql = "DELETE FROM rappel WHERE id = ".$rappelId;
+            $sql = "SELECT COUNT(*) nbUtilisation FROM user_rappel WHERE rappel_id = ".$rappelId;
 
             try
             {
-                return $this->_db->exec($sql);
+                $data = $this->_db->query($sql);
             }
             catch(Exception $e)
             {
                 throw new Exception("Erreur lors de l'execution de la requête");
+            }
+
+            $row = $data->fetch(PDO::FETCH_OBJ);
+            if($row->nbUtilisation == 0)
+            {
+                $sql = "DELETE FROM rappel WHERE id = ".$rappelId;
+
+                try
+                {
+                    return $this->_db->exec($sql);
+                }
+                catch(Exception $e)
+                {
+                    throw new Exception("Erreur lors de l'execution de la requête");
+                }
+            }
+            else
+            {
+                return true;
             }
         }
         else

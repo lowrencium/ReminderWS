@@ -9,6 +9,7 @@ class ContactAction implements IAction
             $server->addFunction("RecupererContacts");
             $server->addFunction("SupprimerContact");
             $server->addFunction("ValiderContact");
+            $server->addFunction("RecupererDemandesContact");
         }
         elseif($server instanceof nusoap_server)
         {
@@ -19,7 +20,9 @@ class ContactAction implements IAction
             SupprimerContactIO::addType($server);
             $server->register("SupprimerContact", array("id" => "xsd:string", "token" => "xsd:string", "contactId" => "xsd:string", "type" => "xsd:string"), array("return" => "tns:SupprimerContactIO"));
             ValiderContactIO::addType($server);
-            $server->register("ValiderContact", array("id" => "xsd:string", "token" => "xsd:string", "contactId" => "xsd:string"), array("return" => "tns:ValiderContactIO"));
+            $server->register("ValiderContact", array("id" => "xsd:string", "token" => "xsd:string", "contactId" => "xsd:string", "valider" => "xsd:boolean"), array("return" => "tns:ValiderContactIO"));
+            RecupererDemandesContactIO::addType($server);
+            $server->register("RecupererDemandesContact", array("id" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:RecupererDemandesContactIO"));
         }
     }
 }
@@ -202,10 +205,11 @@ function SupprimerContact($id, $token, $contactId, $type)
 /**
  * @param string $id
  * @param string $token
- * @param string $contactId
+ * @param string $contactId3
+ * @param boolean $valider
  * @return array
  */
-function ValiderContact($id, $token, $contactId)
+function ValiderContact($id, $token, $contactId, $valider)
 {
     $sortie = new ValiderContactIO();
 
@@ -222,7 +226,7 @@ function ValiderContact($id, $token, $contactId)
     try
     {
         $dataAdapter = new ContactData();
-        $data = $dataAdapter->validerContact($id, $contactId);
+        $data = $dataAdapter->validerContact($id, $contactId, $valider);
     }
     catch(Exception $e)
     {
@@ -235,5 +239,47 @@ function ValiderContact($id, $token, $contactId)
     else
         $sortie->setErreur(new Exception("Erreur lors de l'execution de la requête"));
 
+    return $sortie->toArray();
+}
+
+/**
+ * @param string $id
+ * @param string $token
+ * @return array
+ */
+function RecupererDemandesContact($id, $token)
+{
+    $sortie = new RecupererDemandesContactIO();
+
+    try
+    {
+        $dataAdapter = new AccountData();
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    try
+    {
+        $dataAdapter = new ContactData();
+        $data = $dataAdapter->recupererDemandesContact($id);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    while($row = $data->fetch(PDO::FETCH_OBJ))
+    {
+        $contact = new Contact($row->id);
+        $contact->setNom($row->firstname." ".$row->lastname);
+        $contact->setType("User");
+        $sortie->addContact($contact);
+    }
+
+    $sortie->setResultat(true);
     return $sortie->toArray();
 }

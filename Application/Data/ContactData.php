@@ -105,16 +105,41 @@ class ContactData
         $row = $data->fetch(PDO::FETCH_OBJ);
         if(!is_array($row) && $row->id != $id)
         {
-            $sql = "INSERT INTO `user_user`(`user1_id`, `user2_id`, `validated`) VALUES ('".$id."', '".$row->id."', 0)";
+            $userId = $row->id;
+
+            $sql = "SELECT COUNT(*) as nbLigne ";
+            $sql .= "FROM user_user ";
+            $sql .= "WHERE (user1_id = ".$id." AND user2_id = ".$userId.") ";
+            $sql .= "OR (user1_id = ".$userId." AND user2_id = ".$id.") ";
 
             try
             {
-                return $this->_db->exec($sql);
+                $data = $this->_db->query($sql);
             }
             catch(Exception $e)
             {
                 throw new Exception("Erreur lors de l'execution de la requête");
             }
+
+            $row = $data->fetch(PDO::FETCH_OBJ);
+            if($row->nbLigne == 0)
+            {
+                $sql = "INSERT INTO `user_user`(`user1_id`, `user2_id`, `validated`) VALUES ('".$id."', '".$userId."', 0)";
+
+                try
+                {
+                    return $this->_db->exec($sql);
+                }
+                catch(Exception $e)
+                {
+                    throw new Exception("Erreur lors de l'execution de la requête");
+                }
+            }
+            else
+            {
+                throw new Exception("Vous ètes déjà lié à cet utilisateur ou celui-ci a refusé votre demande de contact");
+            }
+
         }
         else
         {
@@ -205,16 +230,40 @@ class ContactData
     /**
      * @param string $id
      * @param string $contactId
+     * @param boolean $valider
      * @return boolean
      * @throws Exception
      */
-    public function validerContact($id, $contactId)
+    public function validerContact($id, $contactId, $valider)
     {
-        $sql = "UPDATE `user_user` SET `validated`= 1 WHERE user1_id = ".$contactId." AND user2_id = ".$id;
+        $sql = "UPDATE `user_user` SET `validated`= ".($valider ? 1 : 2)." WHERE user1_id = ".$contactId." AND user2_id = ".$id;
 
         try
         {
             return $this->_db->exec($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+    }
+
+    /**
+     * @param string $id
+     * @return PDOStatement
+     * @throws Exception
+     */
+    public function recupererDemandesContact($id)
+    {
+        $sql = "SELECT user.* ";
+        $sql .= "FROM user_user, user ";
+        $sql .= "WHERE user_user.user2_id = ".$id." ";
+        $sql .= "AND user_user.validated = 0 ";
+        $sql .= "AND user.id = user_user.user1_id";
+
+        try
+        {
+            return $this->_db->query($sql);
         }
         catch(Exception $e)
         {
