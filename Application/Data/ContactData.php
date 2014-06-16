@@ -25,7 +25,7 @@ class ContactData
     {
         $sql = "SELECT user.* ";
         $sql .= "FROM user, user_user ";
-        $sql .= "WHERE ((user.id = user_user.user1_id AND user_user.user2_id = 1) OR (user.id = user_user.user2_id AND user_user.user1_id = 1)) ";
+        $sql .= "WHERE ((user.id = user_user.user1_id AND user_user.user2_id = ".$id.") OR (user.id = user_user.user2_id AND user_user.user1_id = ".$id.")) ";
         $sql .= "AND user_user.validated = 1 ";
 
         try
