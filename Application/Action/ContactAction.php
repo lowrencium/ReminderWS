@@ -10,6 +10,7 @@ class ContactAction implements IAction
             $server->addFunction("SupprimerContact");
             $server->addFunction("ValiderContact");
             $server->addFunction("RecupererDemandesContact");
+            $server->addFunction("RecupererMesDemandesContact");
         }
         elseif($server instanceof nusoap_server)
         {
@@ -23,6 +24,8 @@ class ContactAction implements IAction
             $server->register("ValiderContact", array("id" => "xsd:string", "token" => "xsd:string", "contactId" => "xsd:string", "valider" => "xsd:boolean"), array("return" => "tns:ValiderContactIO"));
             RecupererDemandesContactIO::addType($server);
             $server->register("RecupererDemandesContact", array("id" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:RecupererDemandesContactIO"));
+            RecupererMesDemandesContactIO::addType($server);
+            $server->register("RecupererMesDemandesContact", array("id" => "xsd:string", "token" => "xsd:string"), array("return" => "tns:RecupererMesDemandesContactIO"));
         }
     }
 }
@@ -265,6 +268,48 @@ function RecupererDemandesContact($id, $token)
     {
         $dataAdapter = new ContactData();
         $data = $dataAdapter->recupererDemandesContact($id);
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    while($row = $data->fetch(PDO::FETCH_OBJ))
+    {
+        $contact = new Contact($row->id);
+        $contact->setNom($row->firstname." ".$row->lastname);
+        $contact->setType("User");
+        $sortie->addContact($contact);
+    }
+
+    $sortie->setResultat(true);
+    return $sortie->toArray();
+}
+
+/**
+ * @param string $id
+ * @param string $token
+ * @return array
+ */
+function RecupererMesDemandesContact($id, $token)
+{
+    $sortie = new RecupererMesDemandesContactIO();
+
+    try
+    {
+        $dataAdapter = new AccountData();
+    }
+    catch(Exception $e)
+    {
+        $sortie->setErreur($e);
+        return $sortie->toArray();
+    }
+
+    try
+    {
+        $dataAdapter = new ContactData();
+        $data = $dataAdapter->recupererMesDemandesContact($id);
     }
     catch(Exception $e)
     {

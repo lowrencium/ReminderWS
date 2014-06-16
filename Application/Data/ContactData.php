@@ -270,4 +270,27 @@ class ContactData
             throw new Exception("Erreur lors de l'execution de la requête");
         }
     }
+
+    /**
+     * @param string $id
+     * @return PDOStatement
+     * @throws Exception
+     */
+    public function recupererMesDemandesContact($id)
+    {
+        $sql = "SELECT user.* ";
+        $sql .= "FROM user_user, user ";
+        $sql .= "WHERE user_user.user1_id = ".$id." ";
+        $sql .= "AND user_user.validated = 0 ";
+        $sql .= "AND user.id = user_user.user2_id";
+
+        try
+        {
+            return $this->_db->query($sql);
+        }
+        catch(Exception $e)
+        {
+            throw new Exception("Erreur lors de l'execution de la requête");
+        }
+    }
 }
